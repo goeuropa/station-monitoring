@@ -1,0 +1,10 @@
+###GET
+GET localhost:8080/station-monitoring?key=web&OperatorRef=1211&MonitoringRef=1211_331&StopMonitoringDetailLevel=normal&MinimumStopVisitsPerLine=1
+
+###GET
+GET localhost:8080/station-monitoring?key=web&OperatorRef=1211&MonitoringRef=1211_399&StopMonitoringDetailLevel=normal&MinimumStopVisitsPerLine=1
+
+###GET
+GET localhost:8082/stations?key=web
+#Authorization: Basic user:goeuropa
+#Authorization: Basic dXNlcjpnb2V1cm9wYQ==

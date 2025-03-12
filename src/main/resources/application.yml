@@ -1,0 +1,12 @@
+server:
+  port: 8080
+spring:
+  main:
+    banner-mode: "off"
+api:
+## OneBusAway Base URL
+  base-url: ${OBA_BASE_URL}
+## API KEY
+  key: ${API_KEY}
+## Agency ID
+  agency: ${AGENCY_ID}

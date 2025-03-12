@@ -1,0 +1,13 @@
+services:
+  station-monitoring:
+#    image: wkulesza/station-monitoring:latest
+    container_name: station-monitoring
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      OBA_BASE_URL: "https://"
+      API_KEY: ""
+      AGENCY_ID: ""
+    ports:
+      - "8080:8080"
