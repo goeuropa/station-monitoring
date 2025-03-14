@@ -34,9 +34,8 @@ public class StationController {
             @RequestParam(name = "StopMonitoringDetailLevel", required = false) String stopMonitoringDetailLevel,
             @RequestParam(name = "MinimumStopVisitsPerLine") int minimumStopVisitsPerLine) {
         try {
-            String uri = String.format("/siri/stop-monitoring?key=%s&_=%s&OperatorRef=%s&MonitoringRef={stopId}&StopMonitoringDetailLevel=%s&MinimumStopVisitsPerLine=%d&type=json",
-                    key, unixTimestamp, operatorRef, stopMonitoringDetailLevel, minimumStopVisitsPerLine);
-            var response = stationService.getStationMonitoring(uri, key, monitoringRef);
+            var response = stationService.getStationMonitoring(
+                    key, unixTimestamp, operatorRef, monitoringRef, stopMonitoringDetailLevel, minimumStopVisitsPerLine);
             log.info("Get info of {} platforms", response.size());
             return response;
         } catch (Exception e) {

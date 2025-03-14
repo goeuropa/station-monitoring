@@ -22,7 +22,15 @@ public class StopMonitoringClient {
         this.restClient = restClient;
     }
 
-    public Map<String, String> getStopMonitoringForStation(String uri, String stopId) {
+    private final static String URI =
+            "/siri/stop-monitoring.json?key={key}&_={time}&OperatorRef={agencyId}&MonitoringRef={id}&StopMonitoringDetailLevel={details}&MinimumStopVisitsPerLine={visits}&type=json";
+
+    public Map<String, String> getStopMonitoringForStation(String obaKey,
+                                                           String timeStamp,
+                                                           String agencyId,
+                                                           String stopId,
+                                                           String detailLevel,
+                                                           int minimumStopVisitsPerLine) {
         var startTimer = System.currentTimeMillis() / 1000;
 
         List<String> ids = getValidIds(stopId);
@@ -32,7 +40,8 @@ public class StopMonitoringClient {
         for (String id : ids)
             try {
                 var response = restClient.get()
-                        .uri(uri, id)
+                        .uri(URI,
+                                obaKey, timeStamp, agencyId, id, detailLevel, minimumStopVisitsPerLine)
                         .retrieve()
                         .body(Map.class);
                 assert response != null;
