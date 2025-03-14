@@ -5,12 +5,12 @@
 ### examples:
 ##### base-url: https://oba-example-server.org
 ##### key: "the same key as for OBA API"
-##### agency: "agency_id" 
+##### agency: "agency ID"
 
 ----------------------------------------------------------
 ## Run
 Requirement:
-- `java 17 + ` 
+- `java 17 + `
 - `docker` - optional.
 
 ### Commands:
@@ -20,7 +20,7 @@ Requirement:
 ```
 Optional docker compose:
 ```shell
-./gradlew build
+./gradlew assemble
 ```
 ```shell
 docker compose up -d
