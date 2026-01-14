@@ -26,15 +26,24 @@ public class StationService {
         this.stopMonitoringClient = stopMonitoringClient;
     }
 
-    public Map<String, String> getStationMonitoring(String uri, String obaKey, String stopId) {
-        Map<String, String> response = new HashMap<>();
-        if (!obaKey.equals(key) || obaKey.isBlank()) {
-            response.put("Unauthorized", "The key is not valid. Check the key!");
-            log.debug("The key is not valid. Check the key!");
-            return response;
+    public Map<String, String> getStationMonitoring(
+            String obaKey,
+            String unixTimestamp,
+            String operatorRef,
+            String stopId,
+            String detailLevel,
+            int minVisits) {
+
+        if (obaKey.isBlank() || !obaKey.equals(key)) {
+            log.debug("Unauthorized request with invalid key");
+            return Map.of("Unauthorized", "The key is not valid. Check the key!");
         }
-        return stopMonitoringClient.getStopMonitoringForStation(uri, stopId);
+
+        return stopMonitoringClient.getStopMonitoringForStation(
+                obaKey, unixTimestamp, operatorRef, stopId, detailLevel, minVisits
+        );
     }
+
 
     public Map<String, List<String>> getStationIds(String obaKey) {
         Map<String, List<String>> response = new HashMap<>();
