@@ -19,7 +19,7 @@ public class RestClientConfig {
                 .baseUrl(basePath)
                 .defaultHeaders(
                         httpHeaders -> {
-                            httpHeaders.set(HttpHeaders.CONTENT_TYPE,
+                            httpHeaders.set(HttpHeaders.ACCEPT,
                                     MediaType.APPLICATION_JSON_VALUE
                             );
                         })
