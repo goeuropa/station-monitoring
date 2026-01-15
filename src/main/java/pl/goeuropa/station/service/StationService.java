@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import pl.goeuropa.station.client.StopMonitoringClient;
+import pl.goeuropa.station.dto.SiriDto;
 import pl.goeuropa.station.repository.StationRepository;
 
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class StationService {
         this.stopMonitoringClient = stopMonitoringClient;
     }
 
-    public Map<String, String> getStationMonitoring(
+    public Map<String, SiriDto> getStationMonitoring(
             String obaKey,
             String unixTimestamp,
             String operatorRef,
@@ -36,7 +37,7 @@ public class StationService {
 
         if (obaKey.isBlank() || !obaKey.equals(key)) {
             log.debug("Unauthorized request with invalid key");
-            return Map.of("Unauthorized", "The key is not valid. Check the key!");
+            throw new IllegalArgumentException("Unauthorized: The key is not valid. Check the key!");
         }
 
         return stopMonitoringClient.getStopMonitoringForStation(

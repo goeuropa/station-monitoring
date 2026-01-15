@@ -5,6 +5,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import pl.goeuropa.station.dto.SiriDto;
 import pl.goeuropa.station.repository.StationRepository;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class StopMonitoringClient {
         return response;
     }
 
-    public Map<String, String> getStopMonitoringForStation(
+    public Map<String, SiriDto> getStopMonitoringForStation(
             String key,
             String unixTimestamp,
             String operatorRef,
@@ -42,13 +43,13 @@ public class StopMonitoringClient {
         long startTimer = System.currentTimeMillis();
 
         List<String> ids = getValidIds(stopId);
-        if (ids == null || ids.isEmpty()) { return getResponseMessage(); }
+        if (ids == null || ids.isEmpty()) { throw new RuntimeException("Absent stop IDs. Check base"); }
 
-        Map<String, String> station = new ConcurrentHashMap<>();
+        Map<String, SiriDto> station = new ConcurrentHashMap<>();
 
         ids.parallelStream().forEach(id -> {
             try {
-                Map<String, Object> response = restClient.get()
+                SiriDto response = restClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/siri/stop-monitoring.json")
                                 .queryParam("key", key)
@@ -69,8 +70,8 @@ public class StopMonitoringClient {
                         )
                         .body(new ParameterizedTypeReference<>() {});
 
-                if (response != null && response.containsKey("Siri")) {
-                    station.put(id.split("-")[1], response.get("Siri").toString());
+                if (response != null) {
+                    station.put(id.split("-")[1], response);
                 }
             } catch (Exception ex) {
                 log.warn("Failed fetching monitoring for id {}: {}", id, ex.getMessage());
