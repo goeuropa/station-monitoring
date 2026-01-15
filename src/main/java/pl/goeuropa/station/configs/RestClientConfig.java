@@ -22,6 +22,9 @@ public class RestClientConfig {
                             httpHeaders.set(HttpHeaders.ACCEPT,
                                     MediaType.APPLICATION_JSON_VALUE
                             );
+                            httpHeaders.set(HttpHeaders.CONTENT_TYPE,
+                                    "application/json; charset=UTF-8"
+                            );
                         })
                 .build();
     }

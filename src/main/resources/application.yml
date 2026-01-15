@@ -3,9 +3,6 @@ server:
 spring:
   main:
     banner-mode: "off"
-  servlet:
-    multipart:
-      enabled: false
 api:
   security:
     user: ""
