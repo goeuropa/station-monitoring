@@ -15,17 +15,11 @@ public class RestClientConfig {
 
     @Bean
     public RestClient restClient() {
+
         return RestClient.builder()
                 .baseUrl(basePath)
-                .defaultHeaders(
-                        httpHeaders -> {
-                            httpHeaders.set(HttpHeaders.ACCEPT,
-                                    MediaType.APPLICATION_JSON_VALUE
-                            );
-                            httpHeaders.set(HttpHeaders.CONTENT_TYPE,
-                                    "application/json; charset=UTF-8"
-                            );
-                        })
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 }

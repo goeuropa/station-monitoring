@@ -1,14 +1,19 @@
 package pl.goeuropa.station.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
 import pl.goeuropa.station.dto.SiriDto;
 import pl.goeuropa.station.repository.StationRepository;
 
-import java.util.HashMap;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,13 +30,6 @@ public class StopMonitoringClient {
         this.restClient = restClient;
     }
 
-    private static Map<String, String> getResponseMessage() {
-        Map<String, String> response = new HashMap<>();
-        log.debug("I/O error on GET stop IDs request: Check stations or the connection to OBA API");
-        response.put("I/O error on GET stop IDs request", "Check stations or the connection to OBA API");
-        return response;
-    }
-
     public Map<String, SiriDto> getStopMonitoringForStation(
             String key,
             String unixTimestamp,
@@ -43,13 +41,16 @@ public class StopMonitoringClient {
         long startTimer = System.currentTimeMillis();
 
         List<String> ids = getValidIds(stopId);
-        if (ids == null || ids.isEmpty()) { throw new RuntimeException("Absent stop IDs. Check base"); }
+        if (ids == null || ids.isEmpty()) {
+            log.error("I/O error on GET stop IDs request: Check stations or connection to OBA API");
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Absent stop IDs. Check base URL or connection");
+        }
 
         Map<String, SiriDto> station = new ConcurrentHashMap<>();
 
         ids.parallelStream().forEach(id -> {
             try {
-                SiriDto response = restClient.get()
+                var response = restClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/siri/stop-monitoring.json")
                                 .queryParam("key", key)
@@ -61,20 +62,14 @@ public class StopMonitoringClient {
                                 .queryParam("type", "json")
                                 .build())
                         .retrieve()
-                        .onStatus(
-                                HttpStatusCode::is3xxRedirection,
-                                (req, res) -> {
-                                    log.error("302 Location = {}", res.getHeaders().getLocation());
-                                    throw new IllegalStateException("Redirect blocked");
-                                }
-                        )
-                        .body(new ParameterizedTypeReference<>() {});
+                        .body(byte[].class);
 
                 if (response != null) {
-                    station.put(id.split("-")[1], response);
+                    station.put(id.split("-")[1], getSiriDto(response));
                 }
             } catch (Exception ex) {
                 log.warn("Failed fetching monitoring for id {}: {}", id, ex.getMessage());
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Failed fetching stop-monitoring for id " + id + "; cause : " + ex.getMessage());
             }
         });
 
@@ -87,6 +82,17 @@ public class StopMonitoringClient {
         );
 
         return station;
+    }
+
+    private SiriDto getSiriDto(byte[] response) throws JsonProcessingException {
+        String inUTF8 = new String(response, StandardCharsets.UTF_8);
+
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        return mapper.readValue(inUTF8, SiriDto.class);
     }
 
     private List<String> getValidIds(String stopId) {
