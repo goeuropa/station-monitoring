@@ -68,8 +68,13 @@ public class StopMonitoringClient {
                     station.put(id.split("-")[1], getSiriDto(response));
                 }
             } catch (Exception ex) {
-                log.warn("Failed fetching monitoring for id {}: {}", id, ex.getMessage());
-                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Failed fetching stop-monitoring for id " + id + "; cause : " + ex.getMessage());
+                if (ex instanceof JsonProcessingException) {
+                    log.warn("Failed while parsing object: {}", ex.getMessage());
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed while parsing object; cause : " + ex.getMessage());
+                } else {
+                    log.warn("Failed while fetching monitoring for id {}: {}", id, ex.getMessage());
+                    throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Failed while fetching stop-monitoring for id " + id + "; cause : " + ex.getMessage());
+                }
             }
         });
 
