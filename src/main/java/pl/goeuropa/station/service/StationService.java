@@ -2,7 +2,9 @@ package pl.goeuropa.station.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import pl.goeuropa.station.client.StopMonitoringClient;
 import pl.goeuropa.station.dto.SiriDto;
 import pl.goeuropa.station.repository.StationRepository;
@@ -33,7 +35,7 @@ public class StationService {
             String operatorRef,
             String stopId,
             String detailLevel,
-            int minVisits) {
+            int minVisits) throws RuntimeException {
 
         if (obaKey.isBlank() || !obaKey.equals(key)) {
             log.debug("Unauthorized request with invalid key");
@@ -49,16 +51,13 @@ public class StationService {
     public Map<String, List<String>> getStationIds(String obaKey) {
         Map<String, List<String>> response = new HashMap<>();
         if (!obaKey.equals(key) || obaKey.isBlank()) {
-            response.put("Unauthorized", List.of("The key is not valid. Check the key!"));
             log.debug("The key is not valid. Check the key!");
-
-            return response;
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The key is not valid. Check the key!");
         }
         var ids = repository.getStopIds();
         if (ids == null || ids.isEmpty()) {
-            log.debug("I/O error on GET stop IDs request: Check stations or the connection to OBA API");
-            response.put("I/O error on GET stop IDs request", List.of("Check stations or the connection to OBA API"));
-            return response;
+            log.debug("I/O error on GET stop IDs request: Check stations or connection to OBA API");
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Absent stop IDs. Check base URL or connection");
         }
         return ids;
     }

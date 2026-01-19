@@ -3,10 +3,12 @@ package pl.goeuropa.station.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import pl.goeuropa.station.dto.SiriDto;
 import pl.goeuropa.station.service.StationService;
 
@@ -35,14 +37,18 @@ public class StationController {
             @RequestParam(defaultValue = "") String StopMonitoringDetailLevel,
             @RequestParam int MinimumStopVisitsPerLine) {
 
-        return stationService.getStationMonitoring(
-                key,
-                unixTimestamp,
-                OperatorRef,
-                MonitoringRef,
-                StopMonitoringDetailLevel,
-                MinimumStopVisitsPerLine
-        );
+        try { return stationService.getStationMonitoring(
+                    key,
+                    unixTimestamp,
+                    OperatorRef,
+                    MonitoringRef,
+                    StopMonitoringDetailLevel,
+                    MinimumStopVisitsPerLine);
+        } catch (RuntimeException e) {
+            if (e instanceof IllegalArgumentException) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+            } else throw e;
+        }
     }
 
     @GetMapping("stations")
